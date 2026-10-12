@@ -380,6 +380,7 @@ def mcp_config(cfg: dict) -> Path:
     if cfg["autopilot"].get("browser_headless"):
         args.append("--headless")
     path = radar.ROOT / "data" / "mcp.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"mcpServers": {"playwright": {"command": "npx", "args": args}}}), encoding="utf-8")
     return path
 
