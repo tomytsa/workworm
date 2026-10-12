@@ -1,0 +1,57 @@
+# Amber phosphor terminal (IBM 3270 / CRT) theme for WorkWorm.
+
+[theme]
+base = "dark"
+primaryColor = "#ffa526"
+backgroundColor = "#120800"
+secondaryBackgroundColor = "#1f1000"
+textColor = "#ffa526"
+linkColor = "#ffe2b8"
+linkUnderline = true
+codeTextColor = "#ffd27a"
+codeBackgroundColor = "#1f1503"
+borderColor = "#7a4a0e"
+dataframeBorderColor = "#4a3100"
+dataframeHeaderBackgroundColor = "#241802"
+dataframeHeaderTextColor = "#ffcc55"
+showWidgetBorder = true
+baseRadius = "0px"
+buttonRadius = "0px"
+font = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap"
+headingFont = "VT323:https://fonts.googleapis.com/css2?family=VT323&display=swap"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap"
+headingFontWeights = 400
+metricValueFontSize = "2.6rem"
+baseFontSize = 15
+
+# Semantic colours stay inside the phosphor palette.
+redColor = "#ff5a1f"
+redBackgroundColor = "#2b0d02"
+redTextColor = "#ff7a45"
+orangeColor = "#ff8c1a"
+orangeBackgroundColor = "#2a1602"
+orangeTextColor = "#ffa040"
+yellowColor = "#ffd166"
+yellowBackgroundColor = "#2a1f04"
+yellowTextColor = "#ffd166"
+greenColor = "#ffcf4a"
+greenBackgroundColor = "#241a02"
+greenTextColor = "#ffe08a"
+blueColor = "#ffc04d"
+blueBackgroundColor = "#1f1603"
+blueTextColor = "#ffcf73"
+violetColor = "#e09a2a"
+violetBackgroundColor = "#1f1403"
+violetTextColor = "#f0b050"
+grayColor = "#8a6a2a"
+grayBackgroundColor = "#1a1305"
+grayTextColor = "#b08a40"
+
+chartCategoricalColors = ["#ffa526", "#ff7a00", "#ffd166", "#c47f00", "#ff9e40", "#8a5a00", "#ffe3a3"]
+chartSequentialColors = ["#2a1a00", "#4d3000", "#704600", "#945c00", "#b87300", "#db8a00", "#ffa000", "#ffb733", "#ffcd66", "#ffe399"]
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

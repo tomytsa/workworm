@@ -1,0 +1,333 @@
+{
+  "candidate_name": "Nombre Apellido",
+  "candidate_email": "tu.correo@gmail.com",
+  "profile_path": "profile.md",
+  "cvs": [
+    {
+      "id": "es",
+      "language": "es",
+      "focus": "Ofertas en español",
+      "path": "C:/Users/TU_USUARIO/Documents/CV - Español.pdf",
+      "docx": "C:/Users/TU_USUARIO/Documents/CV - Español.docx"
+    },
+    {
+      "id": "en",
+      "language": "en",
+      "focus": "Ofertas en inglés",
+      "path": "C:/Users/TU_USUARIO/Documents/CV - English.pdf",
+      "docx": "C:/Users/TU_USUARIO/Documents/CV - English.docx"
+    }
+  ],
+  "search_terms": [
+    "data engineer",
+    "ingeniero de datos",
+    "etl developer",
+    "analytics engineer",
+    "azure data engineer",
+    "ingeniero de datos azure"
+  ],
+  "scoring": {
+    "role_terms": [
+      "data engineer",
+      "data & analytics engineer",
+      "ingeniero de datos",
+      "ingeniera de datos",
+      "etl",
+      "analytics engineer",
+      "dataops",
+      "data ops",
+      "ingenieria de datos",
+      "databricks developer"
+    ],
+    "main_titles": [
+      "data engineer",
+      "ingeniero de datos",
+      "ingeniera de datos"
+    ],
+    "senior_terms": [
+      "senior",
+      "sr.",
+      "lead",
+      "principal",
+      "staff",
+      "architect",
+      "gerente",
+      "manager",
+      "jefe"
+    ],
+    "skills": {
+      "python": 9,
+      "sql": 9,
+      "azure data factory": 8,
+      "adf": 8,
+      "sql server": 7,
+      "postgresql": 7,
+      "etl": 8,
+      "power bi": 5,
+      "airflow": 5,
+      "n8n": 4,
+      "docker": 3,
+      "metabase": 3,
+      "data governance": 3,
+      "data lineage": 3
+    },
+    "bonus": {
+      "databricks": 3,
+      "pyspark": 2,
+      "spark": 2,
+      "lakehouse": 2
+    },
+    "technologies": [
+      "python",
+      "sql",
+      "pyspark",
+      "spark",
+      "databricks",
+      "airflow",
+      "dbt",
+      "snowflake",
+      "bigquery",
+      "redshift",
+      "aws",
+      "azure",
+      "gcp",
+      "google cloud",
+      "azure data factory",
+      "synapse",
+      "fabric",
+      "kafka",
+      "docker",
+      "kubernetes",
+      "terraform",
+      "power bi",
+      "tableau",
+      "looker",
+      "postgresql",
+      "sql server",
+      "mysql",
+      "mongodb",
+      "scala",
+      "java",
+      "fivetran",
+      "airbyte",
+      "n8n",
+      "pandas",
+      "delta lake",
+      "glue",
+      "lambda",
+      "s3",
+      "etl",
+      "elt",
+      "data lake",
+      "data warehouse",
+      "git",
+      "ci/cd"
+    ]
+  },
+  "home": {
+    "country": "Argentina",
+    "code": "ar",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "places": [
+      "argentina",
+      "buenos aires",
+      "capital federal",
+      "caba",
+      "neuquen",
+      "mendoza",
+      "cordoba",
+      "la plata",
+      "rosario",
+      "munro",
+      "lomas de zamora",
+      "santa fe",
+      "tucuman",
+      "mar del plata"
+    ],
+    "region_terms": [
+      "latam",
+      "latin america",
+      "america latina",
+      "south america"
+    ],
+    "blocked_locations": [
+      "united states",
+      "usa",
+      "us only",
+      "canada",
+      "europe",
+      "serbia"
+    ]
+  },
+  "autopilot": {
+    "enabled": true,
+    "model": "sonnet",
+    "max_applications_per_day": 10,
+    "apply_hours": [
+      9,
+      20
+    ],
+    "reply_hours": [
+      9,
+      23
+    ],
+    "followup_after_days": 7,
+    "ghosted_after_days": 21,
+    "notify_email": "tu.correo@gmail.com",
+    "form_timeout_minutes": 25,
+    "browser_headless": false,
+    "check_every_hours": 4
+  },
+  "collect_every_hours": 4,
+  "enrich_per_run": 60,
+  "indeed": {
+    "enabled": true,
+    "country": "Argentina",
+    "location": "Argentina",
+    "results_per_query": 20
+  },
+  "getonbrd": {
+    "enabled": true
+  },
+  "gmail": {
+    "enabled": true,
+    "query": "from:jobalerts-noreply@linkedin.com newer_than:30d",
+    "max_messages": 100
+  },
+  "boards": [
+    {
+      "provider": "greenhouse",
+      "name": "Databricks",
+      "token": "databricks"
+    },
+    {
+      "provider": "greenhouse",
+      "name": "Fivetran",
+      "token": "fivetran"
+    },
+    {
+      "provider": "greenhouse",
+      "name": "Cloudflare",
+      "token": "cloudflare"
+    },
+    {
+      "provider": "greenhouse",
+      "name": "Canonical",
+      "token": "canonical"
+    }
+  ],
+  "computrabajo": {
+    "enabled": true,
+    "details_per_run": 40
+  },
+  "bumeran": {
+    "enabled": true
+  },
+  "remote_boards": {
+    "enabled": true
+  },
+  "tailoring": {
+    "enabled": true,
+    "tailor_summary": true,
+    "tailor_experience": true,
+    "add_missing_skills": true,
+    "max_added_skills": 2,
+    "missing_in_cover_letter": true,
+    "rules": "Adaptá el CV al aviso usando sus mismas palabras cuando describan algo que realmente hice. Reordená viñetas y habilidades para que lo más relevante quede primero. Nunca inventes logros, cifras, empresas, fechas ni responsabilidades.",
+    "cover_letter_rules": "Carta breve (4 a 7 oraciones), concreta y sin frases infladas. Mencioná 2 o 3 coincidencias reales entre el aviso y mi experiencia. Las tecnologías que pide el aviso y no están en mi experiencia nombralas como tecnologías que manejo o con las que estoy trabajando, nunca como experiencia laboral ni con años de uso. No te disculpes ni señales carencias: no menciones requisitos que no cumplo (seniority, industria, años), salvo nombrar las tecnologías faltantes así."
+  },
+  "language": {
+    "mode": "auto",
+    "fallback": "es"
+  },
+  "exclusions": {
+    "title_keywords": [
+      "Senior",
+      "Sr",
+      "Staff",
+      "Principal",
+      "Lead",
+      "Head of"
+    ],
+    "title_exceptions": [
+      "Semi Senior",
+      "Semi-Senior",
+      "Semisenior",
+      "SSr"
+    ],
+    "max_years": 3,
+    "companies": [],
+    "rules": "- No postular si exige 4 o más años de experiencia como requisito excluyente.\n- No postular si no acepta candidatos que vivan en mi país (si no lo aclara, postular igual)."
+  },
+  "lifeprime": {
+    "enabled": false,
+    "url": "",
+    "duration_minutes": 60,
+    "color": "#ffb000"
+  },
+  "cloud_filter": {
+    "enabled": false,
+    "allow_if_microsoft_too": true,
+    "microsoft_terms": [
+      "Azure",
+      "Microsoft Fabric",
+      "Fabric",
+      "Synapse",
+      "Data Factory",
+      "ADF",
+      "Power BI",
+      "SQL Server",
+      "SSIS",
+      "T-SQL",
+      "Purview",
+      "OneLake",
+      "Cosmos DB",
+      "Dynamics 365",
+      "Microsoft"
+    ],
+    "blocked_terms": [
+      "AWS",
+      "Amazon Web Services",
+      "Redshift",
+      "Glue",
+      "EMR",
+      "Athena",
+      "Kinesis",
+      "Lambda",
+      "SageMaker",
+      "DynamoDB",
+      "S3",
+      "GCP",
+      "Google Cloud",
+      "BigQuery",
+      "Big Query",
+      "Cloud Composer",
+      "Dataproc",
+      "Google Dataflow",
+      "Pub/Sub",
+      "Vertex AI"
+    ]
+  },
+  "linkedin_external": {
+    "enabled": true,
+    "max_visits": 5,
+    "window_hours": 4,
+    "load_wait_seconds": 15,
+    "pause_seconds": 60,
+    "headless": false
+  },
+  "gmail_accounts": {
+    "main": "tu.correo@gmail.com",
+    "alerts": "tu.correo@gmail.com"
+  },
+  "branding": {
+    "name": "WorkWorm",
+    "prediction": ""
+  },
+  "mail_organizer": {
+    "enabled": true,
+    "label": "Ofertas de trabajo",
+    "archive": true,
+    "days": 60
+  }
+}

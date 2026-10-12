@@ -1,0 +1,13 @@
+# Entorno
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Datos personales: nunca se publican
+.secrets/
+data/
+config.json
+profile.md
+.streamlit/secrets.toml
+*.log
