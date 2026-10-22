@@ -171,6 +171,8 @@
       9,
       23
     ],
+    "reply_to_recruiters": true,
+    "followups": true,
     "followup_after_days": 7,
     "ghosted_after_days": 21,
     "notify_email": "tu.correo@gmail.com",

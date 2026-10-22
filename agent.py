@@ -1114,6 +1114,8 @@ def track(service, cfg: dict, report: dict) -> None:
             if status == "action_needed":
                 radar.set_status(app["id"], "conversation", "Respondiste vos desde Gmail")
             continue
+        if not cfg["autopilot"].get("reply_to_recruiters", True):
+            continue  # The user answers recruiters (and books interviews) personally.
         if not within(cfg["autopilot"]["reply_hours"]):
             continue  # Process it in reply hours; it stays unseen until then.
         current = radar.job(app["id"])
@@ -1126,7 +1128,7 @@ def track(service, cfg: dict, report: dict) -> None:
 
 def followups(service, cfg: dict, report: dict) -> None:
     pilot = cfg["autopilot"]
-    if not within(pilot["apply_hours"]):
+    if not pilot.get("followups", True) or not within(pilot["apply_hours"]):
         return
     limit = (datetime.now(timezone.utc) - timedelta(days=pilot["followup_after_days"])).isoformat()
     with connect() as db:
