@@ -78,6 +78,8 @@ WorkWorm usa dos conexiones (`config.json → gmail_accounts`):
 
 Pueden ser la misma cuenta. Se piden permisos de lectura, redacción y (en `main`) etiquetas. Durante la búsqueda no se envían correos.
 
+Mientras la app de Google Cloud esté en modo **Testing**, Google invalida la autorización cada 7 días. Cuando pasa, el tablero muestra «Venció la autorización de Gmail» y el agente no lee ni manda correos hasta que la renueves en **Configuración → Gmail**. Para que no venza, en la pantalla de consentimiento OAuth pulsá **Publish app** (pasa a «In production»). No hace falta que Google la verifique para usarla vos: al autorizar vas a ver el aviso «Google no verificó esta app», elegí **Configuración avanzada → Ir a…**.
+
 ## Configuración
 
 | Sección de `config.json` | Para qué sirve |

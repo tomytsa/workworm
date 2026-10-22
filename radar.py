@@ -626,8 +626,14 @@ def gmail_account(role: str) -> str:
     return accounts.get(role) or cfg["candidate_email"]
 
 
+class GmailExpired(RuntimeError):
+    """Google revoked the stored token (in Testing mode it lasts 7 days); the user must authorize again."""
+
+
 def gmail_service(interactive: bool = False, role: str = "main"):
-    """Return an authorized Gmail API service for a role, or None until OAuth is configured for it."""
+    """Return an authorized Gmail API service for a role, or None until OAuth is configured for it.
+    Raises GmailExpired when the stored token can no longer be refreshed."""
+    from google.auth.exceptions import RefreshError
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import InstalledAppFlow
@@ -643,6 +649,11 @@ def gmail_service(interactive: bool = False, role: str = "main"):
     if creds and creds.expired and creds.refresh_token:
         try:
             creds.refresh(Request())
+        except RefreshError:
+            if not interactive:
+                raise GmailExpired(f"Venció la autorización de Gmail de {gmail_account(role)}. "
+                                   "Volvé a autorizarla en Configuración → Gmail.") from None
+            creds = None
         except Exception:
             creds = None
     if not creds or not creds.valid:

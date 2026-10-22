@@ -1264,7 +1264,11 @@ def run(force_collect: bool = False) -> dict:
             report["errors"].append(f"Falta el archivo del CV: {path} (¿lo renombraste? actualizá config.json → cvs)")
         report["excluded"] = apply_exclusions(cfg)
         report["manual"] = triage_manual(cfg)
-        service = radar.gmail_service()
+        try:
+            service = radar.gmail_service()
+        except radar.GmailExpired as exc:
+            report["errors"].append(str(exc))
+            return report
         if not service:
             report["errors"].append("Gmail no está conectado")
             return report

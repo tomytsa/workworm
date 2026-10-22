@@ -213,9 +213,11 @@ class AgentTests(unittest.TestCase):
                 "subject": "Data Engineer – Ana Pérez", "body": "Hola"}
 
     def test_auto_apply_sends_cv_once_and_respects_daily_cap(self):
-        first = self.add("1", "Python SQL ETL. Enviar CV a cv@acme.com")
-        self.add("2", "Python SQL ETL. Enviar CV a jobs@other.com")
-        self.add("3", "Python SQL ETL. Postulate en el formulario")
+        # Same seen_at for all three, so a clock tick between inserts can't put another offer first.
+        with patch.object(radar, "now", return_value="2026-10-01T12:00:00+00:00"):
+            first = self.add("1", "Python SQL ETL. Enviar CV a cv@acme.com")
+            self.add("2", "Python SQL ETL. Enviar CV a jobs@other.com")
+            self.add("3", "Python SQL ETL. Postulate en el formulario")
         report = {"applied": 0, "skipped": 0, "errors": []}
         with patch.object(agent.llm, "ask", return_value=self.decision()):
             agent.auto_apply(self.service, self.cfg, report)
@@ -517,6 +519,33 @@ class AgentTests(unittest.TestCase):
         self.assertIsNone(agent.match_job("Bob <bob@gmail.com>", "hola", apps))
         self.assertIs(agent.match_job("rrhh@talent.io", "Proceso en Globant", apps), apps[1])
         self.assertIsNone(agent.match_job("jobalerts-noreply@linkedin.com", "Globant", apps))
+
+
+class GmailExpiryTests(unittest.TestCase):
+    def test_revoked_token_raises_gmail_expired_and_cycle_reports_it(self):
+        from google.auth.exceptions import RefreshError
+        with tempfile.TemporaryDirectory() as temp:
+            secrets = Path(temp)
+            (secrets / "credentials.json").write_text("{}", encoding="utf-8")
+            (secrets / "token_main.json").write_text("{}", encoding="utf-8")
+            creds = MagicMock(expired=True, refresh_token="r")
+            creds.refresh.side_effect = RefreshError("invalid_grant: Token has been expired or revoked.")
+            with patch.object(radar, "SECRETS", secrets), \
+                 patch.object(radar, "gmail_account", return_value="me@example.org"), \
+                 patch("google.oauth2.credentials.Credentials.from_authorized_user_file", return_value=creds):
+                with self.assertRaises(radar.GmailExpired) as caught:
+                    radar.gmail_service()
+                self.assertIn("me@example.org", str(caught.exception))
+                with patch.object(agent, "LOCK", secrets / "agent.lock"), \
+                     patch.object(agent, "PROGRESS", secrets / "progress.json"), \
+                     patch.object(radar, "config", return_value={"autopilot": {}}), \
+                     patch.object(agent, "collect_due", return_value=False), \
+                     patch.object(agent, "missing_cvs", return_value=[]), \
+                     patch.object(agent, "apply_exclusions", return_value=0), \
+                     patch.object(agent, "triage_manual", return_value=0), \
+                     patch.object(agent, "progress"), patch.object(agent, "queue_size", return_value=0):
+                    report = agent.run()
+        self.assertTrue(any("Venció la autorización de Gmail" in e for e in report["errors"]))
 
 if __name__ == "__main__":
     unittest.main()
