@@ -225,6 +225,11 @@
   "bumeran": {
     "enabled": true
   },
+  "startupsargentina": {
+    "enabled": true,
+    "max_pages": 25,
+    "details_per_run": 30
+  },
   "remote_boards": {
     "enabled": true
   },

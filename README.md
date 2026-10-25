@@ -89,7 +89,7 @@ Mientras la app de Google Cloud esté en modo **Testing**, Google invalida la au
 | `search_terms` | Búsquedas que se lanzan en cada fuente. |
 | `scoring` | Cargos buscados (`role_terms`), títulos principales, palabras de seniority, peso de cada skill y tecnologías que se muestran. |
 | `home` | Tu país, ciudades, región, zona horaria y ubicaciones que no te sirven. Define la elegibilidad de las ofertas. |
-| `indeed`, `getonbrd`, `computrabajo`, `bumeran`, `remote_boards`, `boards` | Fuentes y empresas de Greenhouse/Lever. Computrabajo y Bumeran son de Argentina. |
+| `indeed`, `getonbrd`, `computrabajo`, `bumeran`, `startupsargentina`, `remote_boards`, `boards` | Fuentes y empresas de Greenhouse/Lever. Computrabajo, Bumeran y Startups Argentina son de Argentina. |
 | `exclusions`, `cloud_filter` | Qué ofertas descartar. El filtro de nube (por ejemplo, solo Azure) está apagado por defecto. |
 | `tailoring`, `language` | Reglas para adaptar CV y carta, e idioma. |
 | `autopilot` | Horarios, límite diario, seguimientos y correo de avisos. |

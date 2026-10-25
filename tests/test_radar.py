@@ -547,5 +547,79 @@ class GmailExpiryTests(unittest.TestCase):
                     report = agent.run()
         self.assertTrue(any("Venció la autorización de Gmail" in e for e in report["errors"]))
 
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+class StartupsArgentinaTests(unittest.TestCase):
+    def fixture(self, name: str) -> str:
+        return (FIXTURES / name).read_text(encoding="utf-8")
+
+    def test_list_page_cards_and_page_count(self):
+        jobs, pages = radar.parse_startupsargentina_list(self.fixture("startupsargentina_list.html"))
+        self.assertEqual(pages, 18)
+        self.assertEqual(len(jobs), 3)
+        first = jobs[0]
+        self.assertEqual(first["external_id"], "51a67401-4d9e-4549-9d4d-534b7d2b77df")
+        self.assertEqual(first["title"], "Junior Software Engineer")
+        self.assertEqual(first["company"], "Canals")
+        self.assertEqual(first["location"], "Colombia / Argentina / Brazil")
+        self.assertEqual(first["remote"], "remote")
+        self.assertEqual(first["url"], "https://www.startupsargentina.com/empleos/canals/"
+                                       "51a67401-4d9e-4549-9d4d-534b7d2b77df/junior-software-engineer")
+        self.assertEqual(jobs[1]["remote"], "onsite")
+        self.assertEqual(jobs[2]["location"], "Argentina (Remote); Buenos Aires, Buenos Aires, Argentina")
+        self.assertTrue(radar.eligible_location(jobs[2]))
+
+    def test_detail_page_description_date_and_apply_link(self):
+        detail = radar.parse_startupsargentina_detail(self.fixture("startupsargentina_detail.html"))
+        self.assertIn("Python, TypeScript and React", detail["description"])
+        self.assertIn("Tipo: FullTime", detail["description"])
+        self.assertNotIn("Aplicar", detail["description"])
+        self.assertTrue(detail["posted_at"].startswith("2026-10-22"))
+        self.assertEqual(detail["apply_url"], "https://jobs.ashbyhq.com/canals/f5be2674-0d4b-406d-bc29-be5e657b8ac5/application")
+        empty = radar.parse_startupsargentina_detail(self.fixture("startupsargentina_detail_empty.html"))
+        self.assertNotIn("todavía no publicó", empty["description"])
+        self.assertEqual(empty["apply_url"], "https://careers-meli.mercadolibre.com/es/positions?id=45017013")
+
+    def test_fetch_reads_details_only_for_target_roles(self):
+        pages = {"list": self.fixture("startupsargentina_list.html"),
+                 "detail": self.fixture("startupsargentina_detail.html")}
+        session = MagicMock()
+
+        def get(url, params=None, timeout=None):
+            response = MagicMock()
+            response.text = pages["list"] if url.endswith("/empleos") else pages["detail"]
+            return response
+        session.get.side_effect = get
+        with tempfile.TemporaryDirectory() as temp, \
+             patch.object(radar, "DB_PATH", Path(temp) / "radar.sqlite3"), \
+             patch.object(radar, "browser_session", return_value=session), \
+             patch.object(radar, "target_role", side_effect=lambda job: "engineer" in job["title"].lower()), \
+             patch("time.sleep"):
+            jobs = radar.fetch_startupsargentina({"startupsargentina": {"enabled": True, "max_pages": 2}})
+        list_calls = [c for c in session.get.call_args_list if c.args[0].endswith("/empleos")]
+        self.assertEqual(len(list_calls), 2)  # capped by max_pages, not the 18 pages of the site
+        self.assertEqual(len(jobs), 3)  # same cards on both pages are not repeated
+        canals = jobs[0]
+        self.assertEqual(canals["url"], "https://jobs.ashbyhq.com/canals/f5be2674-0d4b-406d-bc29-be5e657b8ac5/application")
+        self.assertIn("PostgreSQL", canals["description"])
+        self.assertEqual(jobs[2]["description"], "")  # not a searched role: no detail request
+        self.assertEqual(session.get.call_count, 3)
+
+    def test_fetch_reuses_offers_whose_detail_was_already_read(self):
+        session = MagicMock()
+        session.get.return_value.text = self.fixture("startupsargentina_list.html")
+        with tempfile.TemporaryDirectory() as temp,              patch.object(radar, "DB_PATH", Path(temp) / "radar.sqlite3"),              patch.object(radar, "browser_session", return_value=session),              patch.object(radar, "target_role", return_value=True),              patch("time.sleep"):
+            with radar.connect() as db:
+                radar.upsert(db, {"source": "startupsargentina", "external_id": "51a67401-4d9e-4549-9d4d-534b7d2b77df",
+                                  "title": "Junior Software Engineer", "company": "Canals",
+                                  "url": "https://jobs.ashbyhq.com/canals/x/application", "description": "Python"})
+            jobs = radar.fetch_startupsargentina({"startupsargentina": {"max_pages": 1, "details_per_run": 1}})
+        self.assertEqual(jobs[0]["url"], "https://jobs.ashbyhq.com/canals/x/application")
+        self.assertEqual(jobs[0]["description"], "Python")
+        self.assertEqual(session.get.call_count, 2)  # list page + the one detail allowed (second card), none for Canals
+
+
 if __name__ == "__main__":
     unittest.main()
