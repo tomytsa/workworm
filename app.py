@@ -837,11 +837,12 @@ with sources_tab:
                "lever": any(b["provider"] == "lever" for b in cfg["boards"]),
                "computrabajo": cfg.get("computrabajo", {}).get("enabled", False),
                "bumeran": cfg.get("bumeran", {}).get("enabled", False),
+               "startupsargentina": cfg.get("startupsargentina", {}).get("enabled", False),
                **{k: cfg.get("remote_boards", {}).get("enabled", False) for k in ("himalayas", "remotive", "jobicy")},
                "link": True, "linkedin_ext": cfg.get("linkedin_external", {}).get("enabled", True)}
     prefixes = {"linkedin_alert": "LinkedIn", "indeed": "Indeed", "getonbrd": "Get on Board",
                 "greenhouse": "greenhouse", "lever": "lever", "computrabajo": "Computrabajo", "bumeran": "Bumeran",
-                "himalayas": "Remotos", "remotive": "Remotos", "jobicy": "Remotos", "link": "Link", "linkedin_ext": "LinkedIn externo"}
+                "startupsargentina": "Startups Argentina", "himalayas": "Remotos", "remotive": "Remotos", "jobicy": "Remotos", "link": "Link", "linkedin_ext": "LinkedIn externo"}
     rows = []
     for key, (name, how, apply_how) in radar.SOURCES.items():
         problems = [e for e in errors if e.startswith(prefixes[key])]

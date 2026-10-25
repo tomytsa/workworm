@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from email import message_from_bytes
 from email.message import EmailMessage
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse
 from zoneinfo import ZoneInfo
 
 import requests
@@ -89,6 +89,8 @@ SOURCES = {
                      "Postulación en Computrabajo (sesión iniciada en el Edge del agente)"),
     "bumeran": ("Bumeran / ZonaJobs", "API de búsqueda del sitio (ZonaJobs publica los mismos avisos)",
                 "Postulación en Bumeran (sesión iniciada en el Edge del agente)"),
+    "startupsargentina": ("Startups Argentina", "Listado de startupsargentina.com/empleos + página de cada aviso que interesa",
+                          "Formulario de la empresa (su ATS), con el navegador del agente"),
     "himalayas": ("Himalayas", "API pública de empleos remotos", "Formulario de la empresa, con el navegador del agente"),
     "remotive": ("Remotive", "API pública de empleos remotos", "Formulario de la empresa, con el navegador del agente"),
     "jobicy": ("Jobicy", "API pública de empleos remotos", "Formulario de la empresa, con el navegador del agente"),
@@ -337,7 +339,7 @@ def clean_html(html: str) -> str:
 
 
 def eligible_location(job: dict) -> bool:
-    if job.get("source") in ("indeed", "computrabajo", "bumeran", "linkedin_alert"):
+    if job.get("source") in ("indeed", "computrabajo", "bumeran", "startupsargentina", "linkedin_alert"):
         # Local sites, or LinkedIn alerts whose location the user chose (e.g. USA/Norway/Netherlands remote).
         return True
     location = normalize(job.get("location", ""))
@@ -467,6 +469,104 @@ def fetch_bumeran(cfg: dict) -> list[dict]:
                                     (x.get("modalidadTrabajo") or ""),
                           "url": f"https://www.bumeran.com.ar/empleos/{x['id']}.html",
                           "description": clean_html(x.get("detalle") or ""), "posted_at": posted})
+    return found
+
+
+STARTUPS_AR = "https://www.startupsargentina.com"
+SPANISH_MONTHS = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+                  "octubre", "noviembre", "diciembre")
+
+
+def parse_startupsargentina_list(html: str) -> tuple[list[dict], int]:
+    """Cards of one /empleos page plus the total page count ("Página 1 de 18")."""
+    soup = BeautifulSoup(html, "html.parser")
+    found = []
+    for card in soup.select("article"):
+        link = card.select_one('h2 a[href^="/empleos/"]')
+        if not link:
+            continue
+        parts = link["href"].strip("/").split("/")  # empleos/<startup>/<uuid>/<slug>
+        if len(parts) < 3:
+            continue
+        company = card.select_one('p a[href^="/startups/"]')
+        place = card.find("span", recursive=False)
+        where, _, mode = (place.get_text(" ", strip=True) if place else "").partition(" · ")
+        found.append({"source": "startupsargentina", "external_id": parts[2], "title": link.get_text(" ", strip=True),
+                      "company": company.get_text(" ", strip=True) if company else parts[1],
+                      "location": where.strip(), "remote": "remote" if normalize(mode) == "remote" else mode.strip(),
+                      "url": STARTUPS_AR + link["href"], "description": "", "posted_at": ""})
+    pages = re.search(r"P\w+gina\s+\d+\s+de\s+(\d+)", soup.get_text(" ", strip=True))
+    return found, int(pages.group(1)) if pages else 1
+
+
+def parse_startupsargentina_detail(html: str) -> dict:
+    """Description, facts, publication date and the employer's apply link (usually its ATS) of one offer."""
+    soup = BeautifulSoup(html, "html.parser")
+    facts = {normalize(dt.get_text(" ", strip=True)): dd.get_text(" ", strip=True)
+             for dt, dd in zip(soup.select("dl.job-detail-facts dt"), soup.select("dl.job-detail-facts dd"))}
+    apply = soup.select_one("a.job-detail-apply__button[href]")
+    apply_href = apply["href"] if apply else ""  # read before the header (which holds the button) is dropped
+    copy_node = soup.select_one("article.job-detail-copy")
+    description = ""
+    if copy_node and not copy_node.select_one(".job-detail-empty"):
+        for header in copy_node.select(".job-detail-copy__header"):
+            header.decompose()
+        description = copy_node.get_text("\n", strip=True)
+    posted = ""
+    date = re.match(r"(\d{1,2}) de (\w+) de (\d{4})", normalize(facts.get("publicada", "")))
+    if date and date.group(2) in SPANISH_MONTHS:
+        posted = datetime(int(date.group(3)), SPANISH_MONTHS.index(date.group(2)) + 1, int(date.group(1)),
+                          tzinfo=BUMERAN_TZ).isoformat()
+    apply_url = ""
+    if apply_href:
+        parts = urlparse(apply_href)
+        query = urlencode([(k, v) for k, v in parse_qsl(parts.query) if not k.startswith("utm_")])
+        apply_url = parts._replace(query=query).geturl()
+    extra = " · ".join(f"{k.capitalize()}: {v}" for k, v in facts.items() if k in ("tipo", "modalidad"))
+    return {"description": (description + ("\n\n" + extra if extra else "")).strip(), "posted_at": posted,
+            "apply_url": apply_url}
+
+
+def fetch_startupsargentina(cfg: dict) -> list[dict]:
+    """Startups Argentina (startupsargentina.com/empleos): server-rendered list pages plus each matching offer's page."""
+    import time
+    conf = cfg.get("startupsargentina", {})
+    session, found, seen = browser_session(), [], set()
+    page, pages = 1, 1
+    while page <= min(pages, int(conf.get("max_pages", 25))):
+        response = session.get(f"{STARTUPS_AR}/empleos", params={"page": page} if page > 1 else None, timeout=25)
+        response.raise_for_status()
+        cards, pages = parse_startupsargentina_list(response.text)
+        if not cards:
+            break
+        for job in cards:
+            if job["external_id"] not in seen:
+                seen.add(job["external_id"])
+                found.append(job)
+        page += 1
+        time.sleep(1)
+    with connect() as db:
+        known = {r["external_id"]: dict(r) for r in db.execute(
+            "SELECT external_id, url, description, posted_at FROM jobs WHERE source='startupsargentina'")}
+        # Offers already stored from another platform are dropped by collect(); don't spend detail requests on them.
+        repeated = {job["external_id"] for job in found if job["external_id"] not in known and duplicate(db, job)}
+    limit, fetched = int(conf.get("details_per_run", 30)), 0
+    for job in found:
+        row = known.get(job["external_id"])
+        if row and not row["url"].startswith(STARTUPS_AR):
+            # Detail already read: keep it. Offers stored with the site's own URL got no detail yet (per-run cap).
+            job.update(url=row["url"], description=row["description"], posted_at=row["posted_at"])
+            continue
+        if fetched >= limit or job["external_id"] in repeated or not target_role(job):
+            continue
+        response = session.get(job["url"], timeout=25)
+        response.raise_for_status()
+        detail = parse_startupsargentina_detail(response.text)
+        job.update(description=detail["description"], posted_at=detail["posted_at"])
+        if detail["apply_url"]:
+            job["url"] = detail["apply_url"]  # apply straight on the employer's form
+        fetched += 1
+        time.sleep(1)
     return found
 
 
@@ -728,6 +828,7 @@ def collect() -> dict:
         except Exception as exc:
             errors.append(f"Get on Board: {exc}")
     for key, name, fetch in (("computrabajo", "Computrabajo", fetch_computrabajo), ("bumeran", "Bumeran", fetch_bumeran),
+                             ("startupsargentina", "Startups Argentina", fetch_startupsargentina),
                              ("remote_boards", "Remotos", fetch_remote_boards)):
         if cfg.get(key, {}).get("enabled"):
             try:
